@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Post Details</h2>
+            <div>
+                <button id="export-codes" class="btn btn-success me-2" onclick="exportPostCodes('{{ post.post_id }}')">
+                    Export Post Codes
+                </button>
+                <button id="export-all-codes" class="btn btn-outline-success" onclick="exportAllCodes()">
+                    Export All Codes
+                </button>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h4 class="card-title mb-0">{{ post.title }}</h4>
+                    {% if post.flair %}
+                    <span class="badge bg-secondary">{{ post.flair }}</span>
+                    {% endif %}
+                </div>
+                <div class="post-body mb-3">
+                    {{- post.body | trim -}}
+                </div>
+                <hr>
+                <h6>Post Details</h6>
+                <p class="card-text">
+                    <small class="text-muted">Post ID: {{ post.post_id }}</small><br>
+                    <small class="text-muted">Created: {{ post.created }}</small><br>
+                    <small class="text-muted">Comments: {{ post.num_comments }}</small><br>
+                    <small class="text-muted">
+                        <a href="{{ post.url }}" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> View on Reddit
+                        </a>
+                    </small>
+                </p>
+            </div>
+        </div>
+
+        <div id="comments">
+            {% macro render_comment(comment) %}
+            <div class="comment card mb-2" data-comment-id="{{ comment.comment_id }}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <p class="card-text">{{ comment.body if comment.body else "No content" }}</p>
+                            <div class="comment-meta">
+                                <small class="text-muted">
+                                    ID: {{ comment.comment_id }} |
+                                    Parent: {{ comment.parent_id if comment.parent_id else "None" }}
+                                    {% if comment.flair %}Flair: {{ comment.flair }} |{% endif %}
+                                    {% if comment.is_post_author %}<span class="badge bg-primary">OP</span>{% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 coding-section">
+                            <div class="coding-form">
+                                <div class="d-flex mb-2">
+                                    <input type="text" class="form-control me-2" placeholder="Enter code">
+                                    <button class="btn btn-sm btn-primary save-code-btn" data-comment-id="{{ comment.comment_id }}">Save</button>
+                                </div>
+                                <div class="existing-codes">
+                                    <small class="text-muted">Existing codes:</small>
+                                    <ul class="codes-list" data-comment-id="{{ comment.comment_id }}"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if comment.children %}
+                        <div class="comment-children mt-2">
+                            {% for child in comment.children %}
+                                {{ render_comment(child) }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endmacro %}
+
+            {% for comment in comments %}
+                {{ render_comment(comment) }}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
